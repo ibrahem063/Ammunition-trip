@@ -8,17 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 <style>
-    html, body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-}
-
-main {
-  min-height: 100vh;
-  width: 100vw;
-}
-
+    html, body { width: 100%; height: 100%; margin: 0; }
+    main { min-height: 100vh; width: 100vw; }
     body { background-color: #221f10; min-height: 100vh; direction: rtl; overflow-x: hidden; font-family: 'Cairo', sans-serif; }
     
     .parchment-bg {
@@ -37,20 +28,18 @@ main {
         box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
     }
 
-    /* تحسين شكل العقد */
-    .glow-node { box-shadow: 0 0 15px rgba(242,208,13,0.3); transition: all 0.3s ease; cursor: pointer; }
-    .glow-node:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(242,208,13,0.6); }
-
-/* الخط المتعرج */
+    /* الخط في الخلف */
     #journey-svg {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 0;
-        overflow: visible; /* لضمان عدم قص الانحناءات */
+        top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; z-index: 0; overflow: visible;
+    }
+
+    /* الدبوس فوق كل شيء */
+    #pin-svg {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; z-index: 200; overflow: visible;
     }
 
     #journey-path {
@@ -63,6 +52,14 @@ main {
         animation: dash-move 20s linear infinite;
     }
 
+    #map-pin {
+        fill: #f2d00d;
+        stroke: #fff;
+        stroke-width: 3;
+        transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        filter: drop-shadow(0 0 15px #f2d00d);
+    }
+
     @keyframes dash-move {
         from { stroke-dashoffset: 240; }
         to { stroke-dashoffset: 0; }
@@ -73,15 +70,32 @@ main {
         padding: 10px 20px; border-radius: 50px;
         font-weight: bold; box-shadow: 0 0 20px #f2d00d;
     }
- .node-up   { transform: translateY(-120px); }
-.node-down { transform: translateY(120px); }
+    
+    .node-up { transform: translateY(-120px); }
+    .node-down { transform: translateY(120px); }
 
-/* موبايل — تعرج أفقي */
-@media (max-width: 1024px) {
-  .node-up   { transform: translateX(-70px); }
-  .node-down { transform: translateX(70px); }
-}
+    @media (max-width: 1024px) {
+      .node-up { transform: translateX(-70px); }
+      .node-down { transform: translateX(70px); }
+    }
 
+    /* انيميشن الانفجار والموجة */
+    .key-burst {
+        position: absolute; inset: 0; border-radius: inherit;
+        background: radial-gradient(circle, rgba(242,208,13,0.9) 0%, rgba(242,208,13,0.4) 40%, transparent 20%);
+        animation: burstAnim 0.6s ease-out forwards;
+        pointer-events: none;
+    }
+    @keyframes burstAnim { 0% { transform: scale(0.3); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+    .key-collected { animation: collectAnim 0.5s ease forwards; }
+    @keyframes collectAnim { 0% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.2); filter: brightness(1.6); } 100% { transform: scale(0); opacity: 0; } }
+    .energy-wave {
+        position: absolute; inset: 0; border-radius: inherit;
+        border: 10px solid #f2d00d;
+        animation: waveAnim 1.2s ease-out forwards;
+        pointer-events: none;
+    }
+    @keyframes waveAnim { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(2.2); opacity: 0; } }
 </style>
 </head>
 <body class="text-white">
@@ -115,7 +129,14 @@ main {
 
 <main class="relative z-10 max-w-7xl mx-auto px-10 py-20">
     <div id="nodes-container" class="relative flex flex-col lg:flex-row justify-between items-center gap-24 lg:gap-12 min-h-[60vh]">
-        <svg id="journey-svg"><path id="journey-path" d=""></path></svg>
+        
+        <svg id="journey-svg">
+            <path id="journey-path" d=""></path>
+        </svg>
+
+        <svg id="pin-svg">
+            <circle id="map-pin" r="12" cx="-50" cy="-50"></circle>
+        </svg>
         
         <div class="node relative z-10 flex flex-col items-center">
             <div class="start-point animate-pulse">انطلق من هنا</div>
@@ -131,7 +152,7 @@ main {
             <span class="mt-4 text-[#f2d00d] font-bold">إنجازات VR</span>
         </div>
 
-        <div class="node node-down node relative z-10 flex flex-col items-center group">
+        <div class="node node-down relative z-10 flex flex-col items-center group">
             <div class="w-28 h-28 md:w-36 md:h-36 rotate-45 border-4 border-[#f2d00d] overflow-hidden glow-node bg-black relative" onclick="collectKey(1, this)">
                 <div class="-rotate-45 w-full h-full">
                     <img src="https://almottawer.com/wp-content/uploads/2024/11/%D8%A7%D9%84%D8%AA%D8%B5%D9%85%D9%8A%D9%85-%D8%A7%D9%84%D8%A7%D9%86%D8%B4%D8%A7%D8%A6%D9%8A-570x380.png" class="w-full h-full object-cover scale-150">
@@ -143,7 +164,7 @@ main {
             <span class="mt-8 text-[#f2d00d] font-bold">تصميم هندسي</span>
         </div>
 
-        <div class=" node node-up node relative z-10 flex flex-col items-center group">
+        <div class="node node-up relative z-10 flex flex-col items-center group">
             <div class="w-28 h-28 md:w-36 md:h-36 rounded-2xl border-4 border-[#f2d00d] overflow-hidden glow-node bg-black relative" onclick="collectKey(2, this)">
                 <img src="https://storage.googleapis.com/bucket-two-leobotics/product/robot-compagnie-loona-intelligent-keyi-robotics-0.webp" class="w-full h-full object-cover">
                 <div class="key-overlay absolute inset-0 flex items-center justify-center bg-black/40">
@@ -153,7 +174,7 @@ main {
             <span class="mt-4 text-[#f2d00d] font-bold">المنهج الوصفي</span>
         </div>
 
-        <div class="node node-down node relative z-10 flex flex-col items-center group">
+        <div class="node node-down relative z-10 flex flex-col items-center group">
             <div class="w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-[#f2d00d] overflow-hidden glow-node bg-black relative" onclick="collectKey(3, this)">
                 <img src="https://png.pngtree.com/png-vector/20230728/ourmid/pngtree-science-lab-vector-png-image_6875920.png" class="w-full h-full object-contain p-2">
                 <div class="key-overlay absolute inset-0 flex items-center justify-center bg-black/40">
@@ -169,49 +190,113 @@ main {
             </div>
             <span class="mt-4 text-[#f2d00d] font-bold tracking-widest uppercase">صندوق الكنز</span>
         </div>
-
     </div>
+    <div id="final-modal" class="fixed inset-0 z-[300] flex items-center justify-center bg-black/90 opacity-0 pointer-events-none transition-all duration-1000">
+    <div class="text-center p-10 border-2 border-[#f2d00d] bg-[#221f10] rounded-3xl shadow-[0_0_50px_rgba(242,208,13,0.3)] max-w-2xl mx-4 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 text-[100px] text-[#f2d00d]/5 select-none rotate-12">
+            <span class="material-icons text-[150px]">auto_awesome</span>
+        </div>
+
+        <div class="relative z-10">
+            <span class="material-icons text-[#f2d00d] text-7xl mb-6">workspace_premium</span>
+            
+            <h3 class="text-[#f2d00d] text-2xl md:text-3xl font-bold mb-6 leading-relaxed">
+                لم تزوروا معرضًا فقط… <br>
+                بل دخلتم عقولَ باحثي المستقبل
+            </h3>
+            
+            <div class="h-[1px] w-32 bg-[#f2d00d]/30 mx-auto mb-6"></div>
+            
+            <p class="text-white text-xl md:text-2xl mb-8 leading-relaxed">
+                هنا لا نعرض مشاريع مدرسية، <br>
+                هنا نصنع جيلاً يفكّر ويبتكر
+            </p>
+            
+            <p class="text-[#f2d00d] font-bold text-lg tracking-[4px] uppercase border-t border-[#f2d00d]/20 pt-6">
+                مدرسة الذخيرة النموذجية للبنين
+            </p>
+            
+            <button onclick="location.reload()" class="mt-8 px-8 py-2 bg-[#f2d00d] text-black font-bold rounded-full hover:scale-110 transition-transform">
+                إغلاق
+            </button>
+        </div>
+    </div>
+</div>
 </main>
 
 <script>
- // 1. تصحيح رابط صوت الكنز بإضافة raw=1 في النهاية
 const chestSound = new Audio('https://www.dropbox.com/scl/fi/2b2eg51rubrnxlgn9vdnt/mixkit-game-level-completed-2059.wav?rlkey=wg44pqbadweipmdnd2fv4qa4l&st=uq4vujfp&raw=1');
+const keySound = new Audio("https://www.dropbox.com/scl/fi/u0571hgbe4h8td5lqvlb3/mixkit-game-success-alert-2039.wav?rlkey=f46zg1d4xeikapo4bxbogy64e&st=xd52sm7j&raw=1");
 
 let collectedCount = 0;
 
 function collectKey(index, element) {
     if (element.classList.contains('collected')) return;
-    
     element.classList.add('collected');
     const overlay = element.querySelector('.key-overlay');
-    if (overlay) overlay.style.opacity = '0';
-    element.style.pointerEvents = 'none';
 
-    if (collectedCount < 3){
-         new Audio("https://www.dropbox.com/scl/fi/u0571hgbe4h8td5lqvlb3/mixkit-game-success-alert-2039.wav?rlkey=f46zg1d4xeikapo4bxbogy64e&st=xd52sm7j&raw=1").play();
+    const burst = document.createElement("div");
+    burst.className = "key-burst";
+    element.appendChild(burst);
+
+    const wave = document.createElement("div");
+    wave.className = "energy-wave";
+    element.appendChild(wave);
+
+    const keyIcon = overlay?.querySelector(".material-icons");
+    if (keyIcon) keyIcon.classList.add("key-collected");
+
+    if (collectedCount < 4) {
+        keySound.currentTime = 0;
+        keySound.play().catch(e => console.log(e));
     }
-   
-    
+
+    setTimeout(() => { if (overlay) overlay.style.opacity = '0'; }, 400);
+    element.style.pointerEvents = 'none';
     collectedCount++;
     updateUI();
 }
 
 function updateUI() {
-    document.getElementById('progress-text').innerText = (collectedCount * 25) + "%";
-    const indicators = document.querySelectorAll('#key-indicators .material-icons');
+    const progress = collectedCount * 25;
+    document.getElementById('progress-text').innerText = progress + "%";
     
+    movePinOnPath(collectedCount / 5);
+
+    const indicators = document.querySelectorAll('#key-indicators .material-icons');
     if (indicators[collectedCount - 1]) {
         indicators[collectedCount - 1].classList.replace('text-white/10', 'text-[#f2d00d]');
     }
 
-    // 2. تصحيح طريقة كتابة الشرط والتعامل مع الصوت عند اكتمال الـ 4 مفاتيح
     if (collectedCount === 4) {
+        // تأثيرات فتح الصندوق
         document.getElementById('lock-icon').innerText = 'lock_open';
         document.getElementById('treasure-chest').style.transform = 'scale(1.2)';
+        document.getElementById('treasure-chest').style.boxShadow = '0 0 50px #f2d00d';
         
-        // تشغيل صوت الكنز
-        chestSound.play().catch(e => console.log("خطأ في تشغيل صوت الكنز: ", e));
+        chestSound.play().catch(e => console.log(e));
+        
+        // تحريك الدبوس للنهاية
+        setTimeout(() => movePinOnPath(1), 500);
+
+        // إظهار الرسالة الختامية بتأثير تدريجي بعد 1.5 ثانية
+        setTimeout(() => {
+            const modal = document.getElementById('final-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.add('opacity-100', 'pointer-events-auto');
+        }, 1500);
     }
+}
+
+function movePinOnPath(ratio) {
+    const path = document.getElementById('journey-path');
+    const pin = document.getElementById('map-pin');
+    if (!path || !pin) return;
+    const length = path.getTotalLength();
+    if (length === 0) return;
+    const point = path.getPointAtLength(length * ratio);
+    pin.setAttribute('cx', point.x);
+    pin.setAttribute('cy', point.y);
 }
 
 function drawPath() {
@@ -221,54 +306,33 @@ function drawPath() {
     const cRect = container.getBoundingClientRect();
 
     let d = "";
-
     nodes.forEach((node, i) => {
         const rect = node.getBoundingClientRect();
         const x = (rect.left + rect.width / 2) - cRect.left;
         const y = (rect.top + rect.height / 2) - cRect.top;
 
-        if (i === 0) {
-            d += `M ${x} ${y}`;
-            return;
-        }
+        if (i === 0) { d += `M ${x} ${y}`; return; }
 
         const prevRect = nodes[i - 1].getBoundingClientRect();
         const px = (prevRect.left + prevRect.width / 2) - cRect.left;
         const py = (prevRect.top + prevRect.height / 2) - cRect.top;
-
         const dx = x - px;
         const dy = y - py;
 
         if (window.innerWidth > 1024) {
-            // تعرج أفقي ناعم
-            const cp1x = px + dx * 0.4;
-            const cp1y = py;
-
-            const cp2x = px + dx * 0.6;
-            const cp2y = y;
-
-            d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x} ${y}`;
+            d += ` C ${px + dx * 0.4} ${py}, ${px + dx * 0.6} ${y}, ${x} ${y}`;
         } else {
-            // تعرج رأسي ناعم
-            const cp1x = px;
-            const cp1y = py + dy * 0.4;
-
-            const cp2x = x;
-            const cp2y = py + dy * 0.6;
-
-            d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x} ${y}`;
+            d += ` C ${px} ${py + dy * 0.4}, ${x} ${py + dy * 0.6}, ${x} ${y}`;
         }
     });
 
     path.setAttribute('d', d);
+    movePinOnPath(collectedCount / 5);
 }
 
-
-
-    window.addEventListener('resize', drawPath);
-    window.addEventListener('load', drawPath);
-    setTimeout(drawPath, 500);
+window.addEventListener('resize', drawPath);
+window.addEventListener('load', drawPath);
+setTimeout(drawPath, 500);
 </script>
-
 </body>
 </html>

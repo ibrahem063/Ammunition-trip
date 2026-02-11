@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html class="dark" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ammunition Exhibition Journey Map</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<style>
+    html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+main {
+  min-height: 100vh;
+  width: 100vw;
+}
+
+    body { background-color: #221f10; min-height: 100vh; direction: rtl; overflow-x: hidden; font-family: 'Cairo', sans-serif; }
+    
+    .parchment-bg {
+        background-image: radial-gradient(circle at center, rgba(34,31,16,0.4) 0%, rgba(34,31,16,0.9) 100%), 
+                          url('https://www.transparenttextures.com/patterns/papyrus-dark.png');
+        position: fixed; inset: 0; z-index: -1; filter: contrast(1.1) sepia(0.3);
+    }
+    .blueprint-overlay {
+        position: fixed; inset: 0; opacity: 0.07; pointer-events: none; z-index: -1;
+        background-image: url('https://as1.ftcdn.net/v2/jpg/00/90/08/08/1000_F_90080849_C5UPAYmLWchzQPLwSTcQ1jfE0P2OVfJX.jpg');
+        background-size: cover;
+    }
+    .ornate-border {
+        border: 12px double #f2d00d;
+        position: fixed; inset: 15px; pointer-events: none; z-index: 100;
+        box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+    }
+
+    /* تحسين شكل العقد */
+    .glow-node { box-shadow: 0 0 15px rgba(242,208,13,0.3); transition: all 0.3s ease; cursor: pointer; }
+    .glow-node:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(242,208,13,0.6); }
+
+/* الخط المتعرج */
+    #journey-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        overflow: visible; /* لضمان عدم قص الانحناءات */
+    }
+
+    #journey-path {
+        stroke: #b47500;
+        stroke-width: 5;
+        fill: none;
+        stroke-dasharray: 12, 12;
+        stroke-linecap: round;
+        filter: drop-shadow(0 0 10px rgba(242, 208, 13, 0.8));
+        animation: dash-move 20s linear infinite;
+    }
+
+    @keyframes dash-move {
+        from { stroke-dashoffset: 240; }
+        to { stroke-dashoffset: 0; }
+    }
+
+    .start-point {
+        background: #f2d00d; color: #221f10;
+        padding: 10px 20px; border-radius: 50px;
+        font-weight: bold; box-shadow: 0 0 20px #f2d00d;
+    }
+ .node-up   { transform: translateY(-120px); }
+.node-down { transform: translateY(120px); }
+
+/* موبايل — تعرج أفقي */
+@media (max-width: 1024px) {
+  .node-up   { transform: translateX(-70px); }
+  .node-down { transform: translateX(70px); }
+}
+
+</style>
+</head>
+<body class="text-white">
+
+<div class="parchment-bg"></div>
+<div class="blueprint-overlay"></div>
+<div class="ornate-border"></div>
+
+<header class="relative z-[110] p-8 flex flex-col md:flex-row justify-between items-center gap-6">
+    <div class="bg-black/60 backdrop-blur-md p-4 rounded-lg border-r-4 border-[#f2d00d]">
+        <h2 class="text-[#f2d00d] text-2xl font-bold">رحلة داخل معرض الذخيرة</h2>
+        <p class="text-white/70 text-sm italic">اجمع المفاتيح لفتح كنز المعرفة</p>
+    </div>
+    <div class="bg-black/40 backdrop-blur-md p-3 rounded-xl border border-[#f2d00d]/30 flex items-center gap-6">
+        <div class="flex flex-col items-center">
+            <span class="text-[#f2d00d] text-[10px] font-bold">المفاتيح المجمعة</span>
+            <div id="key-indicators" class="flex gap-2 mt-1">
+                <span class="material-icons text-white/10 text-xl">vpn_key</span>
+                <span class="material-icons text-white/10 text-xl">vpn_key</span>
+                <span class="material-icons text-white/10 text-xl">vpn_key</span>
+                <span class="material-icons text-white/10 text-xl">vpn_key</span>
+            </div>
+        </div>
+        <div class="h-10 w-[1px] bg-[#f2d00d]/20"></div>
+        <div class="text-center">
+            <span class="text-[#f2d00d] text-[10px] block">الإنجاز</span>
+            <span id="progress-text" class="text-2xl font-bold text-[#f2d00d]">0%</span>
+        </div>
+    </div>
+</header>
+
+<main class="relative z-10 max-w-7xl mx-auto px-10 py-20">
+    <div id="nodes-container" class="relative flex flex-col lg:flex-row justify-between items-center gap-24 lg:gap-12 min-h-[60vh]">
+        <svg id="journey-svg"><path id="journey-path" d=""></path></svg>
+        
+        <div class="node relative z-10 flex flex-col items-center">
+            <div class="start-point animate-pulse">انطلق من هنا</div>
+        </div>
+
+        <div class="node node-up relative z-10 flex flex-col items-center group">
+            <div class="w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-[#f2d00d] overflow-hidden glow-node bg-black relative" onclick="collectKey(0, this)">
+                <img src="https://helios-i.mashable.com/imagery/articles/00ucsbs4eF1goFFlOaDL2T9/hero-image.fill.size_1248x702.v1763073914.jpg" class="w-full h-full object-cover">
+                <div class="key-overlay absolute inset-0 flex items-center justify-center bg-black/40">
+                    <span class="material-icons text-[#f2d00d] text-4xl animate-bounce">vpn_key</span>
+                </div>
+            </div>
+            <span class="mt-4 text-[#f2d00d] font-bold">إنجازات VR</span>
+        </div>
+
+        <div class="node node-down node relative z-10 flex flex-col items-center group">
+            <div class="w-28 h-28 md:w-36 md:h-36 rotate-45 border-4 border-[#f2d00d] overflow-hidden glow-node bg-black relative" onclick="collectKey(1, this)">
+                <div class="-rotate-45 w-full h-full">
+                    <img src="https://almottawer.com/wp-content/uploads/2024/11/%D8%A7%D9%84%D8%AA%D8%B5%D9%85%D9%8A%D9%85-%D8%A7%D9%84%D8%A7%D9%86%D8%B4%D8%A7%D8%A6%D9%8A-570x380.png" class="w-full h-full object-cover scale-150">
+                    <div class="key-overlay absolute inset-0 flex items-center justify-center bg-black/40">
+                        <span class="material-icons text-[#f2d00d] text-4xl animate-bounce">vpn_key</span>
+                    </div>
+                </div>
+            </div>
+            <span class="mt-8 text-[#f2d00d] font-bold">تصميم هندسي</span>
+        </div>
+
+        <div class=" node node-up node relative z-10 flex flex-col items-center group">
+            <div class="w-28 h-28 md:w-36 md:h-36 rounded-2xl border-4 border-[#f2d00d] overflow-hidden glow-node bg-black relative" onclick="collectKey(2, this)">
+                <img src="https://5.imimg.com/data5/SELLER/Default/2024/8/447433875/VA/QZ/TK/2357459/humanoid-robot-with-ai.jpg" class="w-full h-full object-cover">
+                <div class="key-overlay absolute inset-0 flex items-center justify-center bg-black/40">
+                    <span class="material-icons text-[#f2d00d] text-4xl animate-bounce">vpn_key</span>
+                </div>
+            </div>
+            <span class="mt-4 text-[#f2d00d] font-bold">منهج تجريبي</span>
+        </div>
+
+        <div class="node node-down node relative z-10 flex flex-col items-center group">
+            <div class="w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-[#f2d00d] overflow-hidden glow-node bg-black relative" onclick="collectKey(3, this)">
+                <img src="https://png.pngtree.com/png-vector/20230728/ourmid/pngtree-science-lab-vector-png-image_6875920.png" class="w-full h-full object-contain p-2">
+                <div class="key-overlay absolute inset-0 flex items-center justify-center bg-black/40">
+                    <span class="material-icons text-[#f2d00d] text-4xl animate-bounce">vpn_key</span>
+                </div>
+            </div>
+            <span class="mt-4 text-[#f2d00d] font-bold">منهج وصفي</span>
+        </div>
+
+        <div id="treasure-chest" class="node relative z-10 flex flex-col items-center">
+            <div class="w-32 h-24 md:w-44 md:h-32 bg-[#3a2a10] border-t-8 border-[#f2d00d] rounded-t-2xl shadow-2xl flex items-center justify-center relative overflow-hidden">
+                <span id="lock-icon" class="material-icons text-[#f2d00d] text-5xl">lock</span>
+            </div>
+            <span class="mt-4 text-[#f2d00d] font-bold tracking-widest uppercase">الكنز</span>
+        </div>
+
+    </div>
+</main>
+
+<script>
+   
+    const chestSound = new Audio('https://www.soundjay.com/buttons_c2026/sounds/button-09a.mp3');
+    
+    let collectedCount = 0;
+
+    function collectKey(index, element) {
+        if (element.classList.contains('collected')) return;
+        
+        element.classList.add('collected');
+        const overlay = element.querySelector('.key-overlay');
+        overlay.style.opacity = '0';
+        element.style.pointerEvents = 'none';
+
+        new Audio("https://www.soundjay.com/buttons_c2026/sounds/button-09a.mp3").play();
+        
+        collectedCount++;
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById('progress-text').innerText = (collectedCount * 25) + "%";
+        const indicators = document.querySelectorAll('#key-indicators .material-icons');
+        if(indicators[collectedCount-1]) {
+            indicators[collectedCount-1].classList.replace('text-white/10', 'text-[#f2d00d]');
+        }
+
+        if (collectedCount === 4) {
+            document.getElementById('lock-icon').innerText = 'lock_open';
+            document.getElementById('treasure-chest').style.transform = 'scale(1.2)';
+            chestSound.play();
+        }
+    }
+
+function drawPath() {
+    const path = document.getElementById('journey-path');
+    const nodes = document.querySelectorAll('.node');
+    const container = document.getElementById('nodes-container');
+    const cRect = container.getBoundingClientRect();
+
+    let d = "";
+
+    nodes.forEach((node, i) => {
+        const rect = node.getBoundingClientRect();
+        const x = (rect.left + rect.width / 2) - cRect.left;
+        const y = (rect.top + rect.height / 2) - cRect.top;
+
+        if (i === 0) {
+            d += `M ${x} ${y}`;
+            return;
+        }
+
+        const prevRect = nodes[i - 1].getBoundingClientRect();
+        const px = (prevRect.left + prevRect.width / 2) - cRect.left;
+        const py = (prevRect.top + prevRect.height / 2) - cRect.top;
+
+        const dx = x - px;
+        const dy = y - py;
+
+        if (window.innerWidth > 1024) {
+            // تعرج أفقي ناعم
+            const cp1x = px + dx * 0.4;
+            const cp1y = py;
+
+            const cp2x = px + dx * 0.6;
+            const cp2y = y;
+
+            d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x} ${y}`;
+        } else {
+            // تعرج رأسي ناعم
+            const cp1x = px;
+            const cp1y = py + dy * 0.4;
+
+            const cp2x = x;
+            const cp2y = py + dy * 0.6;
+
+            d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x} ${y}`;
+        }
+    });
+
+    path.setAttribute('d', d);
+}
+
+
+
+    window.addEventListener('resize', drawPath);
+    window.addEventListener('load', drawPath);
+    setTimeout(drawPath, 500);
+</script>
+
+</body>
+</html>

@@ -145,7 +145,7 @@ main {
 
         <div class=" node node-up node relative z-10 flex flex-col items-center group">
             <div class="w-28 h-28 md:w-36 md:h-36 rounded-2xl border-4 border-[#f2d00d] overflow-hidden glow-node bg-black relative" onclick="collectKey(2, this)">
-                <img src="https://5.imimg.com/data5/SELLER/Default/2024/8/447433875/VA/QZ/TK/2357459/humanoid-robot-with-ai.jpg" class="w-full h-full object-cover">
+                <img src="https://storage.googleapis.com/bucket-two-leobotics/product/robot-compagnie-loona-intelligent-keyi-robotics-0.webp" class="w-full h-full object-cover">
                 <div class="key-overlay absolute inset-0 flex items-center justify-center bg-black/40">
                     <span class="material-icons text-[#f2d00d] text-4xl animate-bounce">vpn_key</span>
                 </div>
@@ -174,38 +174,45 @@ main {
 </main>
 
 <script>
-   
-    const chestSound = new Audio('https://www.soundjay.com/buttons_c2026/sounds/button-09a.mp3');
+ // 1. تصحيح رابط صوت الكنز بإضافة raw=1 في النهاية
+const chestSound = new Audio('https://www.dropbox.com/scl/fi/2b2eg51rubrnxlgn9vdnt/mixkit-game-level-completed-2059.wav?rlkey=wg44pqbadweipmdnd2fv4qa4l&st=uq4vujfp&raw=1');
+
+let collectedCount = 0;
+
+function collectKey(index, element) {
+    if (element.classList.contains('collected')) return;
     
-    let collectedCount = 0;
+    element.classList.add('collected');
+    const overlay = element.querySelector('.key-overlay');
+    if (overlay) overlay.style.opacity = '0';
+    element.style.pointerEvents = 'none';
 
-    function collectKey(index, element) {
-        if (element.classList.contains('collected')) return;
-        
-        element.classList.add('collected');
-        const overlay = element.querySelector('.key-overlay');
-        overlay.style.opacity = '0';
-        element.style.pointerEvents = 'none';
+    if (collectedCount < 3){
+         new Audio("https://www.dropbox.com/scl/fi/u0571hgbe4h8td5lqvlb3/mixkit-game-success-alert-2039.wav?rlkey=f46zg1d4xeikapo4bxbogy64e&st=xd52sm7j&raw=1").play();
+    }
+   
+    
+    collectedCount++;
+    updateUI();
+}
 
-        new Audio("https://drive.google.com/uc?export=download&id=1eNTrQODnCb-f6Bf8m1dTD-HAvvEqOMA-").play();
-        
-        collectedCount++;
-        updateUI();
+function updateUI() {
+    document.getElementById('progress-text').innerText = (collectedCount * 25) + "%";
+    const indicators = document.querySelectorAll('#key-indicators .material-icons');
+    
+    if (indicators[collectedCount - 1]) {
+        indicators[collectedCount - 1].classList.replace('text-white/10', 'text-[#f2d00d]');
     }
 
-    function updateUI() {
-        document.getElementById('progress-text').innerText = (collectedCount * 25) + "%";
-        const indicators = document.querySelectorAll('#key-indicators .material-icons');
-        if(indicators[collectedCount-1]) {
-            indicators[collectedCount-1].classList.replace('text-white/10', 'text-[#f2d00d]');
-        }
-
-        if (collectedCount === 4) {
-            document.getElementById('lock-icon').innerText = 'lock_open';
-            document.getElementById('treasure-chest').style.transform = 'scale(1.2)';
-            chestSound.play();
-        }
+    // 2. تصحيح طريقة كتابة الشرط والتعامل مع الصوت عند اكتمال الـ 4 مفاتيح
+    if (collectedCount === 4) {
+        document.getElementById('lock-icon').innerText = 'lock_open';
+        document.getElementById('treasure-chest').style.transform = 'scale(1.2)';
+        
+        // تشغيل صوت الكنز
+        chestSound.play().catch(e => console.log("خطأ في تشغيل صوت الكنز: ", e));
     }
+}
 
 function drawPath() {
     const path = document.getElementById('journey-path');
